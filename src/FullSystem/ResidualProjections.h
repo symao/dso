@@ -25,9 +25,6 @@
 #pragma once
 
 #include "util/NumType.h"
-#include "FullSystem/FullSystem.h"
-#include "FullSystem/HessianBlocks.h"
-#include "util/settings.h"
 
 namespace dso
 {

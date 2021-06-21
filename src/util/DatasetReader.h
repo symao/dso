@@ -115,9 +115,6 @@ public:
 		isZipped = (path.length()>4 && path.substr(path.length()-4) == ".zip");
 
 
-
-
-
 		if(isZipped)
 		{
 #if HAS_ZIPLIB

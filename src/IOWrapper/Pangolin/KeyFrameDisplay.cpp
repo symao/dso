@@ -202,6 +202,8 @@ bool KeyFrameDisplay::refreshPC(bool canRefresh, float scaledTH, float absTH, in
 	Vec3b* tmpColorBuffer = new Vec3b[numSparsePoints*patternNum];
 	int vertexBufferNumPoints=0;
 
+	// printf("display:%d %d\n", numSparsePoints, my_displayMode);
+	my_displayMode = 0;
 	for(int i=0;i<numSparsePoints;i++)
 	{
 		/* display modes:
@@ -210,7 +212,6 @@ bool KeyFrameDisplay::refreshPC(bool canRefresh, float scaledTH, float absTH, in
 		 * my_displayMode==2 - active only
 		 * my_displayMode==3 - nothing
 		 */
-
 		if(my_displayMode==1 && originalInputSparse[i].status != 1 && originalInputSparse[i].status!= 2) continue;
 		if(my_displayMode==2 && originalInputSparse[i].status != 1) continue;
 		if(my_displayMode>2) continue;
@@ -231,7 +232,6 @@ bool KeyFrameDisplay::refreshPC(bool canRefresh, float scaledTH, float absTH, in
 		if(originalInputSparse[i].relObsBaseline < my_minRelBS)
 			continue;
 
-
 		for(int pnt=0;pnt<patternNum;pnt++)
 		{
 
@@ -242,7 +242,6 @@ bool KeyFrameDisplay::refreshPC(bool canRefresh, float scaledTH, float absTH, in
 			tmpVertexBuffer[vertexBufferNumPoints][0] = ((originalInputSparse[i].u+dx)*fxi + cxi) * depth;
 			tmpVertexBuffer[vertexBufferNumPoints][1] = ((originalInputSparse[i].v+dy)*fyi + cyi) * depth;
 			tmpVertexBuffer[vertexBufferNumPoints][2] = depth*(1 + 2*fxi * (rand()/(float)RAND_MAX-0.5f));
-
 
 
 			if(my_displayMode==0)
