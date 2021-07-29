@@ -36,6 +36,7 @@
 #include "OptimizationBackend/EnergyFunctionalStructs.h"
 #include "IOWrapper/ImageRW.h"
 #include <algorithm>
+#include <vs_common/vs_common.h>
 
 #if !defined(__SSE3__) && !defined(__SSE2__) && !defined(__SSE1__)
 #include "SSE2NEON.h"
@@ -717,15 +718,10 @@ bool CoarseTracker::trackNewestCoarse(
 	return true;
 }
 
-
-
 void CoarseTracker::debugPlotIDepthMap(float* minID_pt, float* maxID_pt, std::vector<IOWrap::Output3DWrapper*> &wraps)
 {
     if(w[1] == 0) return;
-
-
 	int lvl = 0;
-
 	{
 		std::vector<float> allID;
 		for(int i=0;i<h[lvl]*w[lvl];i++)
@@ -780,6 +776,9 @@ void CoarseTracker::debugPlotIDepthMap(float* minID_pt, float* maxID_pt, std::ve
 			if(c>255) c=255;
 			mf.at(i) = Vec3b(c,c,c);
 		}
+		int raw_idx = lastRef->dIp[lvl][0][0] + lastRef->dIp[lvl][1][0] * 255;
+		cv::Mat gray = cv::Mat(h[lvl],w[lvl],CV_8UC3,mf.data).clone();
+
 		int wl = w[lvl];
 		for(int y=3;y<h[lvl]-3;y++)
 			for(int x=3;x<wl-3;x++)
@@ -802,6 +801,31 @@ void CoarseTracker::debugPlotIDepthMap(float* minID_pt, float* maxID_pt, std::ve
 				}
 			}
         //IOWrap::displayImage("coarseDepth LVL0", &mf, false);
+
+		cv::Mat depth_float = cv::Mat(h[lvl], w[lvl], CV_32FC1, cv::Scalar(0));
+		float* ptr_idepth = idepth[lvl];
+		float* ptr_depth = (float*) depth_float.data;
+		for(int i = 0; i < h[lvl] * w[lvl]; i++) {
+			float idepth = *ptr_idepth++;
+			*ptr_depth ++ = idepth > 0 ? 1.0f/idepth : 0;
+		}
+
+		static int save_idx = 0;
+		char fimg[256] = {0};
+		char fdepth[256] = {0};
+		snprintf(fimg, 256, "/home/symao/open_ws/dso/build/depth_dso/%06d.jpg", save_idx);
+		snprintf(fdepth, 256, "/home/symao/open_ws/dso/build/depth_dso/%06d.bin", save_idx);
+		
+		static FILE* fp = fopen("save_info.txt", "w");
+		if(fp) {
+			fprintf(fp, "%d %s\n", raw_idx, fimg);
+			fflush(fp);
+		}
+		save_idx++;
+		cv::imwrite(fimg, gray);
+		vs::writeMatBin(fdepth, depth_float);
+		// cv::imshow("gray", gray);
+		// cv::imshow("depth", vs::drawMatf(depth_float, 60));
 
 
         for(IOWrap::Output3DWrapper* ow : wraps)

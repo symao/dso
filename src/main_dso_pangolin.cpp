@@ -348,6 +348,7 @@ int main(int argc, char** argv) {
     if (useSampleOutput)
         fullSystem->outputWrapper.push_back(new IOWrap::SampleOutputWrapper());
 
+    FILE* fp = fopen("./image_list.txt", "w");
     // to make MacOS happy: run this in dedicated thread -- and use this one to run the GUI.
     std::thread runthread([&]() {
         std::string flog("/home/symao/data/arkit_data/1606136518.log");
@@ -383,7 +384,12 @@ int main(int argc, char** argv) {
             cv::Mat gray;
             cv::cvtColor(img, gray, cv::COLOR_RGB2GRAY);
             cv::resize(gray, gray, cv::Size(640, 480));
-
+            gray.data[0] = idx % 255;
+            gray.data[1] = idx / 255;
+            if(fp) {
+                fprintf(fp, "%d %s\n", idx, fimg);
+                fflush(fp);
+            }
             SE3 pose(T.linear(), T.translation());
             ImageAndExposure input_img(gray.cols, gray.rows);
             cv::Mat input_cv_mat(input_img.h, input_img.w, CV_32FC1, input_img.image);

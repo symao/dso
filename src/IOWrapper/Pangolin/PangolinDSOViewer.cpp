@@ -528,7 +528,6 @@ void PangolinDSOViewer::pushDepthImage(MinimalImageB3* image)
 
     if(!setting_render_displayDepth) return;
     if(disableAllDisplay) return;
-
 	boost::unique_lock<boost::mutex> lk(openImagesMutex);
 
 	struct timeval time_now;
