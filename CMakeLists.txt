@@ -19,7 +19,7 @@ find_package(Eigen3 REQUIRED)
 # optional libraries
 # find_package(LibZip QUIET)
 find_package(Pangolin 0.2 QUIET)
-find_package(OpenCV QUIET)
+find_package(OpenCV 4 QUIET)
 
 # flags
 add_definitions("-DENABLE_SSE")
@@ -77,17 +77,6 @@ else ()
 	set(HAS_OPENCV 0)
 endif ()
 
-# decide if we have ziplib.
-if (LIBZIP_LIBRARY)
-	message("--- found ziplib (${LIBZIP_VERSION}), compiling with zip capability.")
-	add_definitions(-DHAS_ZIPLIB=1)
-	include_directories( ${LIBZIP_INCLUDE_DIR_ZIP} ${LIBZIP_INCLUDE_DIR_ZIPCONF} ) 
-else()
-	message("--- not found ziplib (${LIBZIP_LIBRARY}), compiling without zip capability.")
-	set(LIBZIP_LIBRARY "")
-endif()
-
-
 # compile main library.
 include_directories( ${CSPARSE_INCLUDE_DIR} ${CHOLMOD_INCLUDE_DIR}) 
 add_library(dso ${dso_SOURCE_FILES} ${dso_opencv_SOURCE_FILES} ${dso_pangolin_SOURCE_FILES})
@@ -97,4 +86,7 @@ add_library(dso ${dso_SOURCE_FILES} ${dso_opencv_SOURCE_FILES} ${dso_pangolin_SO
 
 # build main executable (only if we have both OpenCV and Pangolin)
 add_executable(dso_dataset src/main_dso_pangolin.cpp)
-target_link_libraries(dso_dataset dso ${Pangolin_LIBRARIES} ${OpenCV_LIBS} pthread)
+target_link_libraries(dso_dataset dso vs_common ${Pangolin_LIBRARIES} ${OpenCV_LIBS} pthread)
+
+add_executable(test_dso_wrapper src/test_dso_wrapper.cpp src/dso_wrapper.cpp)
+target_link_libraries(test_dso_wrapper dso vs_common ${Pangolin_LIBRARIES} ${OpenCV_LIBS} pthread)
