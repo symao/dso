@@ -13,12 +13,11 @@ set(LIBRARY_OUTPUT_PATH lib)
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 # required libraries
-find_package(SuiteParse REQUIRED)
+# find_package(SuiteParse REQUIRED)
 find_package(Eigen3 REQUIRED)
-find_package(Boost COMPONENTS system thread) 
 
 # optional libraries
-find_package(LibZip QUIET)
+# find_package(LibZip QUIET)
 find_package(Pangolin 0.2 QUIET)
 find_package(OpenCV QUIET)
 
@@ -34,28 +33,9 @@ if (MSVC)
 endif (MSVC)
 
 # Sources files
-set(dso_SOURCE_FILES
-  ${PROJECT_SOURCE_DIR}/src/FullSystem/FullSystem.cpp
-  ${PROJECT_SOURCE_DIR}/src/FullSystem/FullSystemOptimize.cpp
-  ${PROJECT_SOURCE_DIR}/src/FullSystem/FullSystemOptPoint.cpp
-  ${PROJECT_SOURCE_DIR}/src/FullSystem/FullSystemDebugStuff.cpp
-  ${PROJECT_SOURCE_DIR}/src/FullSystem/FullSystemMarginalize.cpp
-  ${PROJECT_SOURCE_DIR}/src/FullSystem/Residuals.cpp
-  ${PROJECT_SOURCE_DIR}/src/FullSystem/CoarseTracker.cpp
-  ${PROJECT_SOURCE_DIR}/src/FullSystem/CoarseInitializer.cpp
-  ${PROJECT_SOURCE_DIR}/src/FullSystem/ImmaturePoint.cpp
-  ${PROJECT_SOURCE_DIR}/src/FullSystem/HessianBlocks.cpp
-  ${PROJECT_SOURCE_DIR}/src/FullSystem/PixelSelector2.cpp
-  ${PROJECT_SOURCE_DIR}/src/OptimizationBackend/EnergyFunctional.cpp
-  ${PROJECT_SOURCE_DIR}/src/OptimizationBackend/AccumulatedTopHessian.cpp
-  ${PROJECT_SOURCE_DIR}/src/OptimizationBackend/AccumulatedSCHessian.cpp
-  ${PROJECT_SOURCE_DIR}/src/OptimizationBackend/EnergyFunctionalStructs.cpp
-  ${PROJECT_SOURCE_DIR}/src/util/settings.cpp
-  ${PROJECT_SOURCE_DIR}/src/util/Undistort.cpp
-  ${PROJECT_SOURCE_DIR}/src/util/globalCalib.cpp
-)
-
-
+file(GLOB dso_SOURCE_FILES ${PROJECT_SOURCE_DIR}/src/FullSystem/*.cpp
+                           ${PROJECT_SOURCE_DIR}/src/OptimizationBackend/*.cpp
+                           ${PROJECT_SOURCE_DIR}/src/util/*.cpp)
 
 include_directories(
   ${PROJECT_SOURCE_DIR}/src
@@ -115,18 +95,6 @@ add_library(dso ${dso_SOURCE_FILES} ${dso_opencv_SOURCE_FILES} ${dso_pangolin_SO
 #set_property( TARGET dso APPEND_STRING PROPERTY COMPILE_FLAGS -Wall )
 
 
-if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin") # OSX
-    set(BOOST_THREAD_LIBRARY boost_thread-mt)
-else()
-    set(BOOST_THREAD_LIBRARY boost_thread)
-endif()
-
 # build main executable (only if we have both OpenCV and Pangolin)
-if (OpenCV_FOUND AND Pangolin_FOUND)
-	message("--- compiling dso_dataset.")
-	add_executable(dso_dataset ${PROJECT_SOURCE_DIR}/src/main_dso_pangolin.cpp )
-    target_link_libraries(dso_dataset dso boost_system cxsparse ${BOOST_THREAD_LIBRARY} ${LIBZIP_LIBRARY} ${Pangolin_LIBRARIES} ${OpenCV_LIBS})
-else()
-	message("--- not building dso_dataset, since either don't have openCV or Pangolin.")
-endif()
-
+add_executable(dso_dataset src/main_dso_pangolin.cpp)
+target_link_libraries(dso_dataset dso ${Pangolin_LIBRARIES} ${OpenCV_LIBS} pthread)
