@@ -35,7 +35,6 @@ class MyOutputWrapper : public IOWrap::Output3DWrapper {
   virtual bool needPushDepthImage() override { return false; }
 
   virtual void pushDepthImageFloat(MinimalImageF* image, FrameHessian* KF) override {
-    // printf("pushDepthImageFloat\n");
     kf_depth = cv::Mat(image->h, image->w, CV_32FC1);
     float* ptr_src = image->data;
     float* ptr_tar = reinterpret_cast<float*>(kf_depth.data);

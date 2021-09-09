@@ -3,6 +3,7 @@
 
 #define ENABLE_VIZ 0
 #define ENABLE_IMSHOW 1
+#define DRAW_DEPTH_OUTSIDE 1
 
 std::vector<cv::Point3f> triangulate(const cv::Mat& depth, const Eigen::Isometry3d& pose, const cv::Mat& K) {
   std::vector<cv::Point3f> pts;
@@ -71,8 +72,19 @@ int main(int argc, char** argv) {
     bool ok = dso.process(gray, pose) && dso.getDepth(depth, depth_pose);
 
 #if ENABLE_IMSHOW
+#if DRAW_DEPTH_OUTSIDE
+    cv::Mat depth_draw;
+    if (!depth.empty() && depth.size() == gray.size()) {
+      cv::Mat inflate_depth;
+      cv::dilate(depth, inflate_depth, cv::getStructuringElement(cv::MORPH_RECT, cv::Size(3, 3)));
+      depth_draw = vs::drawSparseDepth(gray, inflate_depth, 3);
+    } else { 
+      cv::cvtColor(gray, depth_draw, cv::COLOR_GRAY2BGR);
+    }
+#else
     cv::Mat depth_draw = dso.getDepthDraw();
     if (depth.empty()) cv::cvtColor(gray, depth_draw, cv::COLOR_GRAY2BGR);
+#endif
     cv::Mat frame_draw = vs::toRgb(gray);
     if (ok) {
 #if ENABLE_VIZ

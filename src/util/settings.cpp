@@ -254,4 +254,5 @@ int staticPatternNum[10] = {1, 5, 5, 9, 9, 13, 25, 21, 8, 25};
 
 int staticPatternPadding[10] = {1, 1, 1, 1, 2, 2, 2, 3, 2, 4};
 
+bool doDepthReprojection = true;
 }  // namespace dso

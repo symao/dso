@@ -24,6 +24,7 @@
 #pragma once
 
 #include <math.h>
+#include <memory>
 #include "IOWrapper/Output3DWrapper.h"
 #include "OptimizationBackend/MatrixAccumulators.h"
 #include "util/NumType.h"
@@ -46,6 +47,8 @@ class CoarseTracker {
                          Vec5 minResForAbort, IOWrap::Output3DWrapper* wrap = 0);
 
   void setCoarseTrackingRef(std::vector<FrameHessian*> frameHessians);
+
+  std::shared_ptr<MinimalImageF> reprojectInvDepth(const SE3& T_cam2world);
 
   void makeK(CalibHessian* HCalib);
 

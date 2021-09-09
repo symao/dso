@@ -783,6 +783,12 @@ void FullSystem::addActiveFrame(ImageAndExposure* image, int id, const SE3& prio
 
     for (IOWrap::Output3DWrapper* ow : outputWrapper) ow->publishCamPose(fh->shell, &Hcalib);
 
+    // publish non-keyframe depth
+    if (doDepthReprojection) {
+      auto idepth_img = coarseTracker->reprojectInvDepth(fh->shell->camToWorld);
+      for (IOWrap::Output3DWrapper* ow : outputWrapper) ow->pushDepthImageFloat(idepth_img.get(), fh);
+    }
+
     lock.unlock();
     deliverTrackedFrame(fh, needToMakeKF);
     return;
@@ -977,7 +983,7 @@ void FullSystem::makeKeyFrame(FrameHessian* fh) {
     coarseTracker_forNewKF->setCoarseTrackingRef(frameHessians);
 
     coarseTracker_forNewKF->debugPlotIDepthMap(&minIdJetVisTracker, &maxIdJetVisTracker, outputWrapper);
-    coarseTracker_forNewKF->debugPlotIDepthMapFloat(outputWrapper);
+    if (!doDepthReprojection) coarseTracker_forNewKF->debugPlotIDepthMapFloat(outputWrapper);
   }
 
   debugPlot("post Optimize");

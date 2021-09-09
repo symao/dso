@@ -918,4 +918,41 @@ void CoarseDistanceMap::makeK(CalibHessian* HCalib) {
   }
 }
 
+std::shared_ptr<MinimalImageF> CoarseTracker::reprojectInvDepth(const SE3& T_cam2world) {
+  SE3 T_prev2cur = T_cam2world.inverse() * lastRef->PRE_camToWorld;
+  Mat33f RKi = (T_prev2cur.rotationMatrix().cast<float>() * Ki[0]);
+  Vec3f t = (T_prev2cur.translation()).cast<float>();
+  int wl = w[0];
+  int hl = h[0];
+  float fxl = fx[0];
+  float fyl = fy[0];
+  float cxl = cx[0];
+  float cyl = cy[0];
+  int n = pc_n[0];
+  float* fp_u = pc_u[0];
+  float* fp_v = pc_v[0];
+  float* fp_idepth = pc_idepth[0];
+  std::shared_ptr<MinimalImageF> idepth_img = std::make_shared<MinimalImageF>(wl, hl);
+  idepth_img->setConst(0);
+  for (int i = 0; i < n; i++) {
+      // normalized coordinates
+      float x = fp_u[i];
+      float y = fp_v[i];
+      float idepth = fp_idepth[i];
+      Vec3f pt = RKi * Vec3f(x, y, 1) + t * idepth;
+      if (fabs(pt[2]) < 1e-4) continue;
+      float u = pt[0] / pt[2];
+      float v = pt[1] / pt[2];
+      int Ku = fxl * u + cxl + 0.5;
+      int Kv = fyl * v + cyl + 0.5;
+      float new_idepth = idepth / pt[2];
+      if (!(Ku > 2 && Kv > 2 && Ku < wl - 2 && Kv < hl - 2 && new_idepth > 0))
+          continue;
+      idepth_img->at(Ku, Kv) = new_idepth > 0.1 ? new_idepth : 0;
+  }
+
+  return idepth_img;
+}
+
+
 }  // namespace dso

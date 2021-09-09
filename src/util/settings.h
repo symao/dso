@@ -162,6 +162,8 @@ extern float freeDebugParam3;
 extern float freeDebugParam4;
 extern float freeDebugParam5;
 
+extern bool doDepthReprojection;
+
 void handleKey(char k);
 
 extern int staticPattern[10][40][2];
